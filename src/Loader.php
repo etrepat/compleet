@@ -6,6 +6,19 @@ use Compleet\Util\Str;
 class Loader extends Base {
 
   public function load(array $items) {
+    // Clear all the sorted sets and data store for the current type
+    $this->clear();
+
+    // Redis can continue serving cached requests for this type while the reload is
+    // occuring. Some requests may be cached incorrectly as empty set (for requests
+    // which come in after the above delete, but before the loading completes). But
+    // everything will work itself out as soon as the cache expires again.
+    foreach($items as $item) $this->add($item, true);
+
+    return $items;
+  }
+
+  public function clear() {
     // Delete the sorted sets for the current type
     $phrases = $this->redis()->smembers($this->getIndexPrefix());
 
@@ -16,15 +29,6 @@ class Loader extends Base {
 
     // Delete the data stored for this type
     $this->redis()->del($this->getDataPrefix());
-
-    // Redis can continue serving cached requests for this type while the reload is
-    // occuring. Some requests may be cached incorrectly as empty set (for requests
-    // which come in after the above delete, but before the loading completes). But
-    // everything will work itself out as soon as the cache expires again.
-
-    foreach($items as $item) $this->add($item, true);
-
-    return $items;
   }
 
   public function add(array $item, $skipDuplicateChecks = false) {
