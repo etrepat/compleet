@@ -24,7 +24,7 @@ class Str {
     $prefixes = array_map(function($w) use ($minComplete) {
       return array_map(function($l) use ($w) {
         return grapheme_substr($w, 0, $l + 1);
-      }, Ary::range($minComplete - 1, static::size($w) - 1));
+      }, range($minComplete - 1, static::size($w) - 1));
     } , $words);
 
     return array_unique(Ary::flatten($prefixes));

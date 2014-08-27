@@ -17,24 +17,4 @@ class Ary {
     return $output;
   }
 
-  /**
-   * Builds an array with the range of values provided filled in.
-   *
-   * @param int   start
-   * @param int   end
-   * @param bool  inclusive
-   */
-  public static function range($start, $end, $inclusive = true) {
-    $output = [];
-
-    $max = $inclusive ? $end : $end - 1;
-
-    if ( $start >= $max ) return $output;
-
-    for ($value = $start; $value <= $max; $value++)
-      $output[] = $value;
-
-    return $output;
-  }
-
 }
