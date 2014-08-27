@@ -1,5 +1,5 @@
 <?php
-namespace Compleet\Helpers;
+namespace Compleet\Util;
 
 class Ary {
 

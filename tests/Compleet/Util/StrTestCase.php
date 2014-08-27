@@ -1,9 +1,28 @@
 <?php
-namespace Compleet;
+namespace Compleet\Util;
 
-use Compleet\Helpers\Str;
+use Compleet\Util\Str;
 
 class StrTestCase extends \PHPUnit_Framework_TestCase {
+
+  public function testSize() {
+    $this->assertEquals(9, Str::size('something'));
+    $this->assertEquals(9, Str::size('sómèthïng'));
+    $this->assertEquals(4, Str::size('测试中文'));
+  }
+
+  public function testSubstr() {
+    $str = 'Hello World';
+
+    $this->assertEquals('Hello World', Str::substr($str, 0));
+    $this->assertEquals('World', Str::substr($str, 6));
+    $this->assertEquals('ello', Str::substr($str, 1, 4));
+
+    $str = '测试中文';
+    $this->assertEquals('测试中文', Str::substr($str, 0));
+    $this->assertEquals('中', Str::substr($str, 2, 1));
+    $this->assertEquals('测试', Str::substr($str, 0, 2));
+  }
 
   public function testNormalize() {
     $this->assertEquals('the knicks', Str::normalize('the.- knicks'));

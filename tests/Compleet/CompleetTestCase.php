@@ -7,7 +7,7 @@ use Compleet\Matcher;
 
 class CompleetTestCase extends \PHPUnit_Framework_TestCase {
 
-  protected static $redis;
+  protected static $redis = null;
 
   protected $json = 'samples/venues.json';
 
@@ -24,7 +24,7 @@ class CompleetTestCase extends \PHPUnit_Framework_TestCase {
     $this->assertEquals(7, count($loaded));
 
     $matcher = new Matcher('venues', static::$redis);
-    $results = $matcher->matches('stad')->limit(5)->get();
+    $results = $matcher->matches('stad', ['limit' => 5]);
 
     $this->assertEquals(5, count($results));
     $this->assertEquals('Citi Field', $results[0]['term']);
@@ -40,15 +40,15 @@ class CompleetTestCase extends \PHPUnit_Framework_TestCase {
 
     $matcher = new Matcher('venues', static::$redis);
 
-    $results = $matcher->matches('land shark stadium')->limit(5)->get();
+    $results = $matcher->matches('land shark stadium', ['limit' => 5]);
     $this->assertEquals(1, count($results));
     $this->assertEquals('Sun Life Stadium', $results[0]['term']);
 
-    $results = $matcher->matches('中国')->limit(5)->get();
+    $results = $matcher->matches('中国', ['limit' => 5]);
     $this->assertEquals(1, count($results));
     $this->assertEquals('中国佛山 李小龙', $results[0]['term']);
 
-    $results = $matcher->matches('stadium')->limit(5)->get();
+    $results = $matcher->matches('stadium', ['limit' => 5]);
     $this->assertEquals(5, count($results));
   }
 
@@ -58,15 +58,15 @@ class CompleetTestCase extends \PHPUnit_Framework_TestCase {
 
     $loader->load([]);
 
-    $results = $matcher->matches('te')->noCache()->get();
+    $results = $matcher->matches('te', ['cache' => false]);
     $this->assertEquals(0, count($results));
 
     $loader->add(['id' => 1, 'term' => 'Testing this', 'score' => 10]);
-    $results = $matcher->matches('te')->noCache()->get();
+    $results = $matcher->matches('te', ['cache' => false]);
     $this->assertEquals(1, count($results));
 
     $loader->remove(['id' => 1]);
-    $results = $matcher->matches('te')->noCache()->get();
+    $results = $matcher->matches('te', ['cache' => false]);
     $this->assertEquals(0, count($results));
   }
 
@@ -80,14 +80,14 @@ class CompleetTestCase extends \PHPUnit_Framework_TestCase {
     $loader->add(['id' => 2, 'term' => 'Another Term', 'score' => 9]);
     $loader->add(['id' => 3, 'term' => 'Something different', 'score' => 5]);
 
-    $results = $matcher->matches('te')->noCache()->get();
+    $results = $matcher->matches('te', ['cache' => false]);
     $this->assertEquals(2, count($results));
     $this->assertEquals('Testing this', $results[0]['term']);
     $this->assertEquals(10, $results[0]['score']);
 
     $loader->add(['id' => 1, 'term' => 'Updated', 'score' => 5]);
 
-    $results = $matcher->matches('te')->noCache()->get();
+    $results = $matcher->matches('te', ['cache' => false]);
     $this->assertEquals(1, count($results));
     $this->assertEquals('Another Term', $results[0]['term']);
     $this->assertEquals(9, $results[0]['score']);

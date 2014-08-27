@@ -1,7 +1,7 @@
 <?php
 namespace Compleet;
 
-use Compleet\Helpers\Str;
+use Compleet\Util\Str;
 
 class Loader extends Base {
 
@@ -29,7 +29,7 @@ class Loader extends Base {
 
   public function add(array $item, $skipDuplicateChecks = false) {
     if ( !(array_key_exists('id', $item) && array_key_exists('term', $item)) )
-      throw new ArgumentError('Items must specify both an id and a term.');
+      throw new ItemFormatException('Items must specify both an id and a term.');
 
     // kill any old items with this id if needed
     if ( !$skipDuplicateChecks ) $this->remove(['id' => $item['id']]);

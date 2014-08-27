@@ -1,44 +1,36 @@
 <?php
 namespace Compleet;
 
-use Compleet\Helpers\Str;
+use Compleet\Util\Str;
 
 class Matcher extends Base {
 
-  protected $limit = 5;
-
-  protected $cache = true;
-
-  protected $expiry = 600;
-
-  protected $words = [];
-
-  public function matches($term) {
-    $words = explode(' ', Str::normalize($term));
-
-    $this->words = array_filter($words, function($w) {
+  public function matches($term, $options = array()) {
+    $words = array_filter(explode(' ', Str::normalize($term)), function($w) {
       return (Str::size($w) >= $this->getMinComplete() || !in_array($w, $this->getStopWords()));
     });
 
-    sort($this->words);
+    sort($words);
 
-    return $this;
-  }
+    if ( empty($words) ) return [];
 
-  public function get() {
-    if ( empty($this->words) ) return [];
+    $limit = isset($options['limit']) ? $options['limit'] : 5;
 
-    $cacheKey = $this->getCachePrefix() . ':' . implode('|', $this->words);
+    $cache = isset($options['cache']) ? $options['cache']: true;
 
-    if ( !$this->cache || !$this->redis()->exists($cacheKey) || $this->redis()->exists($cacheKey) == 0 ) {
+    $cacheExpiry = isset($options['expiry']) ? $options['expiry'] : 600;
+
+    $cacheKey = $this->getCachePrefix() . ':' . implode('|', $words);
+
+    if ( !$cache || !$this->redis()->exists($cacheKey) || $this->redis()->exists($cacheKey) == 0 ) {
       $interKeys = array_map(function($w) {
-        return "{$this->getIndexPrefix()}:{$w}"; }, $this->words);
+        return "{$this->getIndexPrefix()}:{$w}"; }, $words);
 
       $this->redis()->zinterstore($cacheKey, $interKeys);
-      $this->redis()->expire($cacheKey, $this->expiry);
+      $this->redis()->expire($cacheKey, $cacheExpiry);
     }
 
-    $ids = $this->redis()->zrevrange($cacheKey, 0, $this->limit - 1);
+    $ids = $this->redis()->zrevrange($cacheKey, 0, $limit - 1);
 
     if ( count($ids) === 0 ) return [];
 
@@ -47,28 +39,6 @@ class Matcher extends Base {
 
     return array_map(function($res) {
       return json_decode($res, true); }, $results);
-  }
-
-  public function limit($limit) {
-    $this->limit = $limit;
-
-    return $this;
-  }
-
-  public function cache($enable) {
-    $this->cache = $enable;
-
-    return $this;
-  }
-
-  public function expires($expiry) {
-    $this->expiry = $expiry;
-
-    return $this;
-  }
-
-  public function noCache() {
-    return $this->cache(false);
   }
 
 }
