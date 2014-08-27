@@ -64,6 +64,8 @@ abstract class Base  {
   protected $cacheIndexName = 'compleet-cache';
 
   /**
+   * Data type (class of data/bucket)
+   *
    * @var string
    */
   protected $type;
@@ -80,6 +82,25 @@ abstract class Base  {
     $this->type = $type;
 
     if ( !is_null($redis) ) $this->setConnection($redis);
+  }
+
+  /**
+   * Gets the current instance data type
+   *
+   * @return string
+   */
+  public function getType() {
+    return $this->type;
+  }
+
+  /**
+   * Sets the current instance data type
+   *
+   * @param   string $type
+   * @return  void
+   */
+  public function setType($type) {
+    $this->type = Str::normalize($type);
   }
 
   /**
