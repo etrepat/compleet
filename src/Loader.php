@@ -33,7 +33,7 @@ class Loader extends Base {
 
   public function add(array $item, $skipDuplicateChecks = false) {
     if ( !(array_key_exists('id', $item) && array_key_exists('term', $item)) )
-      throw new ItemFormatException('Items must specify both an id and a term.');
+      throw new ItemFormatException('Items must at least specify both an id and a term.');
 
     // Set default options for item array
     $item = array_merge(['score' => 0], $item);
