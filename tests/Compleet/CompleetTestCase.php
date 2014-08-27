@@ -2,105 +2,135 @@
 namespace Compleet;
 
 use Predis\Client as Client;
-use Compleet\Loader;
-use Compleet\Matcher;
 
 class CompleetTestCase extends \PHPUnit_Framework_TestCase {
 
   protected static $redis = null;
 
-  protected $json = 'samples/venues.json';
+  protected $loader = null;
+
+  protected $matcher = null;
 
   public static function setUpBeforeClass() {
-    static::$redis = new Client('tcp://127.0.0.1:6379?database=0');
+    $conn = getenv('REDIS_URL') ?: 'tcp://127.0.0.1/6379?database=0';
+
+    static::$redis = new Client($conn);
+  }
+
+  public static function tearDownAfterClass() {
+    static::$redis->quit();
+
+    static::$redis = null;
+  }
+
+  protected function importFromJSON($path) {
+    $data = file_get_contents($path);
+
+    $items = array_map(function($json) {
+      return json_decode($json, true); }, explode(PHP_EOL, $data));
+
+    return array_filter($items, function($item) {
+      return !is_null($item) && !empty($item);
+    });
+  }
+
+  public function setUp() {
+    $this->loader = new Loader('venues'); // new Loader('venues', static::$redis)
+    $this->loader->setConnection(static::$redis);
+
+    $this->loader->clear();
+
+    $this->matcher = new Matcher('venues');
+    $this->matcher->setConnection(static::$redis);
   }
 
   public function testCanLoadAndMatch() {
-    $items = $this->loadFromJSON(__DIR__ . '/../' . $this->json);
+    $items = $this->importFromJSON(__DIR__ . '/../samples/venues.json');
 
-    $loader = new Loader('venues', static::$redis);
-    $loaded = $loader->load($items);
+    $loaded = $this->loader->load($items);
 
     $this->assertEquals(7, count($loaded));
 
-    $matcher = new Matcher('venues', static::$redis);
-    $results = $matcher->matches('stad', ['limit' => 5]);
-
+    $results = $this->matcher->matches('stad', ['limit' => 5]);
     $this->assertEquals(5, count($results));
     $this->assertEquals('Citi Field', $results[0]['term']);
   }
 
   public function testCanLoadAndMatchViaAliases() {
-    $items = $this->loadFromJSON(__DIR__ . '/../' . $this->json);
+    $items = $this->importFromJSON(__DIR__ . '/../samples/venues.json');
 
-    $loader = new Loader('venues', static::$redis);
-    $loaded = $loader->load($items);
-
+    $loaded = $this->loader->load($items);
     $this->assertEquals(7, count($loaded));
 
-    $matcher = new Matcher('venues', static::$redis);
-
-    $results = $matcher->matches('land shark stadium', ['limit' => 5]);
+    $results = $this->matcher->matches('land shark stadium', ['limit' => 5]);
     $this->assertEquals(1, count($results));
     $this->assertEquals('Sun Life Stadium', $results[0]['term']);
 
-    $results = $matcher->matches('中国', ['limit' => 5]);
+    $results = $this->matcher->matches('中国', ['limit' => 5]);
     $this->assertEquals(1, count($results));
     $this->assertEquals('中国佛山 李小龙', $results[0]['term']);
 
-    $results = $matcher->matches('stadium', ['limit' => 5]);
+    $results = $this->matcher->matches('stadium', ['limit' => 5]);
     $this->assertEquals(5, count($results));
   }
 
-  public function testCanRemoveItems() {
-    $loader = new Loader('venues', static::$redis);
-    $matcher = new Matcher('venues', static::$redis);
-
-    $loader->load([]);
-
-    $results = $matcher->matches('te', ['cache' => false]);
+  public function testLoaderCanAddItems() {
+    $results = $this->matcher->matches('te', ['cache' => false]);
     $this->assertEquals(0, count($results));
 
-    $loader->add(['id' => 1, 'term' => 'Testing this', 'score' => 10]);
-    $results = $matcher->matches('te', ['cache' => false]);
-    $this->assertEquals(1, count($results));
+    $this->loader->add(['id' => 1, 'term' => 'Testing this', 'score' => 10]);
+    $this->loader->add(['id' => 2, 'term' => 'Something there', 'score' => 20]);
+    $this->loader->add(['id' => 3, 'term' => 'Well, you should test this', 'score' => 5]);
 
-    $loader->remove(['id' => 1]);
-    $results = $matcher->matches('te', ['cache' => false]);
+    $results = $this->matcher->matches('we', ['cache' => false]);
+    $this->assertEquals(1, count($results));
+    $this->assertEquals([3], array_map(function($it) { return $it['id']; }, $results));
+
+    $results = $this->matcher->matches('th', ['cache' => false]);
+    $this->assertEquals(3, count($results));
+    $this->assertEquals([2, 1, 3], array_map(function($it) { return $it['id']; }, $results));
+
+    $results = $this->matcher->matches('fu', ['cache' => false]);
     $this->assertEquals(0, count($results));
   }
 
-  public function testCanUpdateItems() {
-    $loader = new Loader('venues', static::$redis);
-    $matcher = new Matcher('venues', static::$redis);
+  public function testLoaderCanRemoveItems() {
+    $results = $this->matcher->matches('th', ['cache' => false]);
+    $this->assertEquals(0, count($results));
 
-    $loader->load([]);
+    $this->loader->add(['id' => 1, 'term' => 'Testing this', 'score' => 10]);
+    $this->loader->add(['id' => 2, 'term' => 'Something there', 'score' => 20]);
+    $this->loader->add(['id' => 3, 'term' => 'Well, you should test this', 'score' => 5]);
 
-    $loader->add(['id' => 1, 'term' => 'Testing this', 'score' => 10]);
-    $loader->add(['id' => 2, 'term' => 'Another Term', 'score' => 9]);
-    $loader->add(['id' => 3, 'term' => 'Something different', 'score' => 5]);
+    $results = $this->matcher->matches('th', ['cache' => false]);
+    $this->assertEquals(3, count($results));
 
-    $results = $matcher->matches('te', ['cache' => false]);
+    $this->loader->remove(['id' => 2]);
+
+    $results = $this->matcher->matches('th', ['cache' => false]);
+    $this->assertEquals(2, count($results));
+    $this->assertEquals(1, $results[0]['id']);
+  }
+
+  public function testLoaderCanUpdateItems() {
+    $results = $this->matcher->matches('te', ['cache' => false]);
+    $this->assertEquals(0, count($results));
+
+    $this->loader->add(['id' => 1, 'term' => 'Testing this', 'score' => 10]);
+    $this->loader->add(['id' => 2, 'term' => 'Another Term', 'score' => 9]);
+    $this->loader->add(['id' => 3, 'term' => 'Something different', 'score' => 5]);
+
+    $results = $this->matcher->matches('te', ['cache' => false]);
     $this->assertEquals(2, count($results));
     $this->assertEquals('Testing this', $results[0]['term']);
     $this->assertEquals(10, $results[0]['score']);
 
-    $loader->add(['id' => 1, 'term' => 'Updated', 'score' => 5]);
+    $this->loader->add(['id' => 1, 'term' => 'Updated', 'score' => 5]);
 
-    $results = $matcher->matches('te', ['cache' => false]);
+    $results = $this->matcher->matches('te', ['cache' => false]);
     $this->assertEquals(1, count($results));
     $this->assertEquals('Another Term', $results[0]['term']);
     $this->assertEquals(9, $results[0]['score']);
-  }
-
-  protected function loadFromJSON($path) {
-    $data = file_get_contents($path);
-
-    return array_filter(array_map(function($json) {
-      return json_decode($json, true);
-    }, explode(PHP_EOL, $data)), function($ary) {
-      return !is_null($ary);
-    });
   }
 
 }
