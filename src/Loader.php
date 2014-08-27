@@ -35,6 +35,9 @@ class Loader extends Base {
     if ( !(array_key_exists('id', $item) && array_key_exists('term', $item)) )
       throw new ItemFormatException('Items must specify both an id and a term.');
 
+    // Set default options for item array
+    $item = array_merge(['score' => 0], $item);
+
     // kill any old items with this id if needed
     if ( !$skipDuplicateChecks ) $this->remove(['id' => $item['id']]);
 
