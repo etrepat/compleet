@@ -214,7 +214,7 @@ abstract class Base  {
    * @return string
    */
   public function getCachePrefix() {
-    return "{$this->indexName}:{$this->type}";
+    return "{$this->cacheIndexName}:{$this->type}";
   }
 
 }
