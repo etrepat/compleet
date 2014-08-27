@@ -16,7 +16,7 @@ class Matcher extends Base {
 
     $limit = isset($options['limit']) ? $options['limit'] : 5;
 
-    $cache = isset($options['cache']) ? $options['cache']: true;
+    $cache = isset($options['cache']) ? $options['cache'] : true;
 
     $cacheExpiry = isset($options['expiry']) ? $options['expiry'] : 600;
 
