@@ -30,19 +30,19 @@ class Matcher extends Base {
 
     $cacheKey = $this->getCachePrefix() . ':' . implode('|', $this->words);
 
-    if ( !$this->cache || !$this->redis->exists($cacheKey) || $this->redis->exists($cacheKey) == 0 ) {
+    if ( !$this->cache || !$this->redis()->exists($cacheKey) || $this->redis()->exists($cacheKey) == 0 ) {
       $interKeys = array_map(function($w) {
         return "{$this->getIndexPrefix()}:{$w}"; }, $this->words);
 
-      $this->redis->zinterstore($cacheKey, $interKeys);
-      $this->redis->expire($cacheKey, $this->expiry);
+      $this->redis()->zinterstore($cacheKey, $interKeys);
+      $this->redis()->expire($cacheKey, $this->expiry);
     }
 
-    $ids = $this->redis->zrevrange($cacheKey, 0, $this->limit - 1);
+    $ids = $this->redis()->zrevrange($cacheKey, 0, $this->limit - 1);
 
     if ( count($ids) === 0 ) return [];
 
-    $results = $this->redis->hmget($this->getDataPrefix(), $ids);
+    $results = $this->redis()->hmget($this->getDataPrefix(), $ids);
     $results = array_filter($results, function($res) { return !is_null($res); });
 
     return array_map(function($res) {

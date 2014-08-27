@@ -7,15 +7,15 @@ class Loader extends Base {
 
   public function load(array $items) {
     // Delete the sorted sets for the current type
-    $phrases = $this->redis->smembers($this->getIndexPrefix());
+    $phrases = $this->redis()->smembers($this->getIndexPrefix());
 
-    $this->redis->pipeline(function($pipe) use ($phrases) {
+    $this->redis()->pipeline(function($pipe) use ($phrases) {
       foreach($phrases as $p) $pipe->del("{$this->getIndexPrefix()}:{$p}");
       $pipe->del($this->getIndexPrefix());
     });
 
     // Delete the data stored for this type
-    $this->redis->del($this->getDataPrefix());
+    $this->redis()->del($this->getDataPrefix());
 
     // Redis can continue serving cached requests for this type while the reload is
     // occuring. Some requests may be cached incorrectly as empty set (for requests
@@ -34,7 +34,7 @@ class Loader extends Base {
     // kill any old items with this id if needed
     if ( !$skipDuplicateChecks ) $this->remove(['id' => $item['id']]);
 
-    $this->redis->pipeline(function($pipe) use ($item) {
+    $this->redis()->pipeline(function($pipe) use ($item) {
       // store the raw data in a separate key to reduce memory usage
       $pipe->hset($this->getDataPrefix(), $item['id'], json_encode($item));
 
@@ -53,14 +53,14 @@ class Loader extends Base {
 
   // remove only cares about an item's id, but for consistency takes an array
   public function remove(array $item) {
-    $stored = $this->redis->hget($this->getDataPrefix(), $item['id']);
+    $stored = $this->redis()->hget($this->getDataPrefix(), $item['id']);
 
     if ( is_null($stored) ) return;
 
     $item = json_decode($stored, true);
 
     // undo the add operations
-    $this->redis->pipeline(function($pipe) use ($item) {
+    $this->redis()->pipeline(function($pipe) use ($item) {
       $pipe->hdel($this->getDataPrefix(), $item['id']);
 
       $prefixes = $this->prefixes($item);
