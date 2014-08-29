@@ -86,7 +86,7 @@ class App {
     }
   }
 
-  public function loadCommand($type) {
+  protected function loadCommand($type) {
     $items = $this->getItemsFromSTDIN();
 
     $loaded = [];
@@ -101,7 +101,7 @@ class App {
     return 0;
   }
 
-  public function addCommand($type) {
+  protected function addCommand($type) {
     $items = $this->getItemsFromSTDIN();
 
     $loaded = 0;
@@ -120,7 +120,7 @@ class App {
     return 0;
   }
 
-  public function removeCommand($type) {
+  protected function removeCommand($type) {
     $items = $this->getItemsFromSTDIN();
 
     $loaded = 0;
@@ -139,7 +139,7 @@ class App {
     return 0;
   }
 
-  public function queryCommand($type, $query) {
+  protected function queryCommand($type, $query) {
     fprintf(STDOUT, "> Querying '%s' for '%s'\n", $type, $query);
 
     $matcher = $this->getCompleetMatcher($type);
