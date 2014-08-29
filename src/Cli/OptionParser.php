@@ -41,8 +41,6 @@ class OptionParser {
 
     array_shift($args);
 
-    if ( empty($args) || !is_array($args) ) return $options;
-
     while ( ($opt = array_shift($args)) !== NULL ) {
       if ( $opt[0] == '-' ) {
         if ( strpos($opt, '=') !== false ) {
