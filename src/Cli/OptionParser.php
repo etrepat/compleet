@@ -11,7 +11,7 @@ class OptionParser {
 
   protected $specs = [];
 
-  protected $help = ['Options:'];
+  protected $help = ['', 'Options:'];
 
   public function banner($banner) {
     $this->banner = $banner;

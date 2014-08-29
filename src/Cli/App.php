@@ -21,12 +21,12 @@ class App {
     $this->version = $this->getVersionString();
 
     $this->parser = new OptionParser;
-    $this->parser->banner("Usage:\n    compleet [OPTIONS] COMMAND\n")
+    $this->parser->banner("Usage:\n    compleet [OPTIONS] COMMAND")
       ->separator('')
       ->on('-r', '--redis'      , OptionParser::OPTION_VALUE_REQUIRED , 'Redis connection string (tcp://127.0.0.1:6379?database=0)')
       ->on('-s', '--stop-words' , OptionParser::OPTION_VALUE_REQUIRED , 'Path to file containing a list of stop words')
-      ->on('-h', '--help'       , OptionParser::OPTION_VALUE_NONE     , 'Show this help screen')
       ->on('-v', '--version'    , OptionParser::OPTION_VALUE_NONE     , 'Display version number')
+      ->on('-h', '--help'       , OptionParser::OPTION_VALUE_NONE     , 'Show this help screen')
       ->separator('')
       ->separator('Commands are:')
       ->separator("\r    load   TYPE        Replaces collection specified by TYPE with items read from stdin in the JSON lines format.")
@@ -41,7 +41,7 @@ class App {
       $options = $this->parser->parse($arguments);
 
       if ( isset($options['version']) ) {
-        fprintf(STDOUT, "%s\n", $this->getVersionString());
+        fprintf(STDOUT, "%s\n", $this->version);
 
         return 0;
       }
