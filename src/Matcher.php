@@ -7,7 +7,7 @@ class Matcher extends Base {
 
   public function matches($term, $options = array()) {
     $words = array_filter(explode(' ', Str::normalize($term)), function($w) {
-      return (Str::size($w) >= $this->getMinComplete() || !in_array($w, $this->getStopWords()));
+      return (Str::size($w) >= $this->getMinComplete() && !in_array($w, $this->getStopWords()));
     });
 
     sort($words);
