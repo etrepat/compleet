@@ -133,4 +133,35 @@ class CompleetTestCase extends \PHPUnit_Framework_TestCase {
     $this->assertEquals(9, $results[0]['score']);
   }
 
+  public function testMatcherHonorsLimitParameter() {
+    $items = $this->importFromJSON(__DIR__ . '/../samples/venues.json');
+
+    $loaded = $this->loader->load($items);
+    $this->assertEquals(7, count($loaded));
+
+    $results = $this->matcher->matches('sta');
+    $this->assertEquals(5, count($results));
+
+    $results = $this->matcher->matches('sta', ['limit' => 3]);
+    $this->assertEquals(3, count($results));
+  }
+
+  public function testMatcherHonorsMinCompleteSetting() {
+    $items = $this->importFromJSON(__DIR__ . '/../samples/venues.json');
+
+    $loaded = $this->loader->load($items);
+    $this->assertEquals(7, count($loaded));
+
+    $results = $this->matcher->matches('sta', ['limit' => 5]);
+    $this->assertEquals(5, count($results));
+
+    $this->matcher->setMinComplete(4);
+
+    $results = $this->matcher->matches('sta', ['limit' => 5]);
+    $this->assertEquals(0, count($results));
+
+    $results = $this->matcher->matches('stad', ['limit' => 5]);
+    $this->assertEquals(5, count($results));
+  }
+
 }
