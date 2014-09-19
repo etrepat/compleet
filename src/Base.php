@@ -2,8 +2,8 @@
 namespace Compleet;
 
 use Predis\Client;
-use Compleet\Helpers\Ary;
-use Compleet\Helpers\Str;
+use Compleet\Util\Ary;
+use Compleet\Util\Str;
 
 abstract class Base  {
 
