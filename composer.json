@@ -22,6 +22,9 @@
   "require-dev": {
     "phpunit/phpunit": "~4.0"
   },
+  "bin": [
+    "bin/compleet"
+  ],
   "autoload": {
     "psr-4": { "Compleet\\": "src/" }
   }
