@@ -157,6 +157,8 @@ abstract class Base  {
   }
 
   /**
+   * Returns the min-complete setting.
+   *
    * @return int
    */
   public function getMinComplete() {
@@ -164,7 +166,10 @@ abstract class Base  {
   }
 
   /**
-   * @return void
+   * Set the default minimum characters for a word to be considered.
+   *
+   * @param   int $min
+   * @return  void
    */
   public function setMinComplete($min) {
     $this->minComplete = intval($min);

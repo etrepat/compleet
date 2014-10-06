@@ -5,6 +5,12 @@ use Compleet\Util\Str;
 
 class Loader extends Base {
 
+  /**
+   * Loads supplied items array into Redis.
+   *
+   * @param   array $items
+   * @return  array
+   */
   public function load(array $items) {
     // Clear all the sorted sets and data store for the current type
     $this->clear();
@@ -18,6 +24,11 @@ class Loader extends Base {
     return $items;
   }
 
+  /**
+   * Clear redis indexed item data.
+   *
+   * @return void
+   */
   public function clear() {
     // Delete the sorted sets for the current type
     $phrases = $this->redis()->smembers($this->getIndexPrefix());
@@ -31,6 +42,13 @@ class Loader extends Base {
     $this->redis()->del($this->getDataPrefix());
   }
 
+  /**
+   * Adds a single item into Redis.
+   *
+   * @param   array   $item
+   * @param   bool    $skipDuplicateChecks
+   * @return  void
+   */
   public function add(array $item, $skipDuplicateChecks = false) {
     if ( !(array_key_exists('id', $item) && array_key_exists('term', $item)) )
       throw new ItemFormatException('Items must at least specify both an id and a term.');
@@ -58,7 +76,13 @@ class Loader extends Base {
     });
   }
 
-  // remove only cares about an item's id, but for consistency takes an array
+  /**
+   * Removes the supplied item from Redis.
+   * It only cares about an item's id, but for consistency takes an array
+   *
+   * @param   array $item
+   * @return  void
+   */
   public function remove(array $item) {
     $stored = $this->redis()->hget($this->getDataPrefix(), $item['id']);
 
@@ -83,10 +107,24 @@ class Loader extends Base {
     });
   }
 
+  /**
+   * Computes all the word prefixes for a given item which satisfy the
+   * min-complete requirement and are not in the stop-words array.
+   *
+   * @param   array $item
+   * @return  array
+   */
   protected function prefixes($item) {
     return Str::prefixesForPhrase($this->itemPhrase($item), $this->getMinComplete(), $this->getStopWords());
   }
 
+  /**
+   * Computes the full-phrase for the given item taking into account its
+   * term + aliases (if provided).
+   *
+   * @param   array $item
+   * @return  string
+   */
   protected function itemPhrase($item) {
     $phrase = [$item['term']];
 

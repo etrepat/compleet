@@ -5,6 +5,13 @@ use Compleet\Util\Str;
 
 class Matcher extends Base {
 
+  /**
+   * Matches the given term against the indexed data in the Redis database.
+   *
+   * @param   string  $term
+   * @param   array   $options
+   * @return  array
+   */
   public function matches($term, $options = array()) {
     $words = array_filter(explode(' ', Str::normalize($term)), function($w) {
       return (Str::size($w) >= $this->getMinComplete() && !in_array($w, $this->getStopWords()));

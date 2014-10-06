@@ -9,14 +9,39 @@ use Compleeet\Util\Str;
 
 class App {
 
+  /**
+   * Option parser object.
+   *
+   * @var Compleet\Cli\OptionParser
+   */
   protected $parser = null;
 
+  /**
+   * Redis client instance.
+   *
+   * @var Predis\Client
+   */
   protected $redis = null;
 
+  /**
+   * Stop words array.
+   *
+   * @var array
+   */
   protected $stopWords = array();
 
+  /**
+   * App version.
+   *
+   * @var string
+   */
   protected $version = Compleet::VERSION;
 
+  /**
+   * Class constructor. Initializes option parser to use.
+   *
+   * @return void
+   */
   public function __construct() {
     $this->version = $this->getVersionString();
 
@@ -36,6 +61,12 @@ class App {
       ->separator('');
   }
 
+  /**
+   * Runs the client application with the supplied arguments.
+   *
+   * @param   array $arguments
+   * @return  int
+   */
   public function run(array $arguments) {
     try {
       $options = $this->parser->parse($arguments);
@@ -86,6 +117,13 @@ class App {
     }
   }
 
+  /**
+   * Loads the stdin supplied items for the given type into the Redis
+   * database instance.
+   *
+   * @param   string $type
+   * @return  int
+   */
   protected function loadCommand($type) {
     $items = $this->getItemsFromSTDIN();
 
@@ -101,6 +139,13 @@ class App {
     return 0;
   }
 
+  /**
+   * Adds the stdin supplied item for the given type into the Redis
+   * database instance.
+   *
+   * @param   string $type
+   * @return  int
+   */
   protected function addCommand($type) {
     $items = $this->getItemsFromSTDIN();
 
@@ -120,6 +165,13 @@ class App {
     return 0;
   }
 
+  /**
+   * Removes the stdin supplied items for the given type from the Redis
+   * database instance.
+   *
+   * @param   string $type
+   * @return  int
+   */
   protected function removeCommand($type) {
     $items = $this->getItemsFromSTDIN();
 
@@ -139,6 +191,14 @@ class App {
     return 0;
   }
 
+  /**
+   * Queries the current Redis database instance against the given type and
+   * prints out the results in stdout.
+   *
+   * @param   string $type
+   * @param   string $query
+   * @return  int
+   */
   protected function queryCommand($type, $query) {
     fprintf(STDOUT, "> Querying '%s' for '%s'\n", $type, $query);
 
@@ -153,6 +213,11 @@ class App {
     return 0;
   }
 
+  /**
+   * Return the version string.
+   *
+   * @return string
+   */
   protected function getVersionString() {
     return implode(PHP_EOL, [
       'Compleet v'.Compleet::VERSION.' (c) '.date('Y').' Estanislau Trepat',
@@ -160,6 +225,12 @@ class App {
     ]);
   }
 
+  /**
+   * Returns a new Compleet\Loader instance for the supplied type.
+   *
+   * @param   string $type
+   * @return  Compleet\Loader
+   */
   protected function getCompleetLoader($type) {
     $loader = new Loader($type);
 
@@ -172,6 +243,12 @@ class App {
     return $loader;
   }
 
+  /**
+   * Returns a new Compleet\Matcher instance for the supplied type.
+   *
+   * @param   string $type
+   * @return  Compleet\Matcher
+   */
   protected function getCompleetMatcher($type) {
     $matcher = new Matcher($type);
 
@@ -184,6 +261,11 @@ class App {
     return $matcher;
   }
 
+  /**
+   * Parses JSON items from stdin and returns a PHP array.
+   *
+   * @return array
+   */
   protected function getItemsFromSTDIN() {
     $data = explode(PHP_EOL, file_get_contents("php://stdin"));
 
