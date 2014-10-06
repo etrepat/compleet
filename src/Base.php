@@ -191,12 +191,69 @@ abstract class Base  {
   }
 
   /**
+   * Returns the base index name.
+   *
+   * @return string
+   */
+  public function getIndexName() {
+    return $this->indexName;
+  }
+
+  /**
+   * Sets the base index name.
+   *
+   * @param   string $value
+   * @return  void
+   */
+  public function setIndexName($value) {
+    $this->indexName = $value;
+  }
+
+  /**
+   * Returns the data index name.
+   *
+   * @return string
+   */
+  public function getDataIndexName() {
+    return $this->dataIndexName;
+  }
+
+  /**
+   * Sets the data index name.
+   *
+   * @param   string $value
+   * @return  void
+   */
+  public function setDataIndexName($value) {
+    $this->dataIndexName = $value;
+  }
+
+  /**
+   * Returns the cache index name.
+   *
+   * @return string
+   */
+  public function getCacheIndexName() {
+    return $this->cacheIndexName;
+  }
+
+  /**
+   * Sets the cache index name.
+   *
+   * @param   string $value
+   * @return  void
+   */
+  public function setCacheIndexName($value) {
+    $this->cacheIndexName = $value;
+  }
+
+  /**
    * Returns the base index prefix name.
    *
    * @return string
    */
   public function getIndexPrefix() {
-    return "{$this->indexName}:{$this->type}";
+    return $this->getIndexName() . ':' . $this->getType();
   }
 
   /**
@@ -205,7 +262,7 @@ abstract class Base  {
    * @return string
    */
   public function getDataPrefix() {
-    return "{$this->dataIndexName}:{$this->type}";
+    return $this->getDataIndexName() . ':' . $this->getType();
   }
 
   /**
@@ -214,7 +271,7 @@ abstract class Base  {
    * @return string
    */
   public function getCachePrefix() {
-    return "{$this->cacheIndexName}:{$this->type}";
+    $this->getCacheIndexName() . ':' . $this->getType();
   }
 
 }
