@@ -1,7 +1,6 @@
 <?php
 namespace Compleet\Cli;
 
-use Predis\Client;
 use Compleet\Base as Compleet;
 use Compleet\Matcher;
 use Compleet\Loader;
@@ -9,19 +8,14 @@ use Compleeet\Support\Str;
 
 class App {
 
+  use \Compleet\Support\Traits\RedisConnectionManager;
+
   /**
    * Option parser object.
    *
    * @var Compleet\Cli\OptionParser
    */
   protected $parser = null;
-
-  /**
-   * Redis client instance.
-   *
-   * @var Predis\Client
-   */
-  protected $redis = null;
 
   /**
    * Stop words array.
@@ -84,7 +78,7 @@ class App {
       }
 
       if ( isset($options['redis']) ) {
-        $this->redis = new Client($options['redis']);
+        $this->setConnection($options['redis']);
       }
 
       if ( isset($options['stop-words']) ) {
@@ -232,15 +226,7 @@ class App {
    * @return  Compleet\Loader
    */
   protected function getCompleetLoader($type) {
-    $loader = new Loader($type);
-
-    if ( !is_null($this->redis) )
-      $loader->setConnection($this->redis);
-
-    if ( !empty($this->stopWords) )
-      $loader->setStopWords($this->stopWords);
-
-    return $loader;
+    return $this->getCompleetObject('Compleet\Loader', $type);
   }
 
   /**
@@ -250,15 +236,22 @@ class App {
    * @return  Compleet\Matcher
    */
   protected function getCompleetMatcher($type) {
-    $matcher = new Matcher($type);
+    return $this->getCompleetObject('Compleet\Matcher', $type);
+  }
 
-    if ( !is_null($this->redis) )
-      $matcher->setConnection($this->redis);
+  /**
+   * Returns a new Compleet{Loader,Matcher} instance for the supplied type.
+   * @param   string $klass
+   * @return  mixed
+   */
+  protected function getCompleetObject($klass, $type) {
+    $obj = new $klass($type);
 
-    if ( !empty($this->stopWords) )
-      $matcher->setStopWords($this->stopWords);
+    $obj->setConnection($this->redis());
 
-    return $matcher;
+    if ( !empty($this->stopWords) ) $obj->setStopWords($this->stopWords);
+
+    return $obj;
   }
 
   /**
