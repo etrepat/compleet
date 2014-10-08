@@ -1,7 +1,7 @@
 <?php
-namespace Compleet\Util;
+namespace Compleet\Support;
 
-use Compleet\Util\Ary;
+use Compleet\Support\Ary;
 
 class AryTestCase extends \PHPUnit_Framework_TestCase {
 

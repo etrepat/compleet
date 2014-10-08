@@ -5,7 +5,7 @@ use Predis\Client;
 use Compleet\Base as Compleet;
 use Compleet\Matcher;
 use Compleet\Loader;
-use Compleeet\Util\Str;
+use Compleeet\Support\Str;
 
 class App {
 

@@ -1,7 +1,7 @@
 <?php
 namespace Compleet;
 
-use Compleet\Util\Str;
+use Compleet\Support\Str;
 
 class Loader extends Base {
 

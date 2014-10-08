@@ -1,5 +1,5 @@
 <?php
-namespace Compleet\Util;
+namespace Compleet\Support;
 
 class Str {
 

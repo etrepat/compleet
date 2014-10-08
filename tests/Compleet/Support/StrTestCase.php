@@ -1,7 +1,7 @@
 <?php
-namespace Compleet\Util;
+namespace Compleet\Support;
 
-use Compleet\Util\Str;
+use Compleet\Support\Str;
 
 class StrTestCase extends \PHPUnit_Framework_TestCase {
 
