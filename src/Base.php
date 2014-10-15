@@ -14,7 +14,7 @@ abstract class Base  {
    *
    * @var string
    */
-  const VERSION = '1.0.0';
+  const VERSION = '1.0.1';
 
   /**
    * Mininum amount of chars to consider autocompletion.
@@ -211,7 +211,7 @@ abstract class Base  {
    * @return string
    */
   public function getCachePrefix() {
-    $this->getCacheIndexName() . ':' . $this->getType();
+    return $this->getCacheIndexName() . ':' . $this->getType();
   }
 
 }
